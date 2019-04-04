@@ -1,7 +1,6 @@
 import React from 'react';
-import axios from 'axios';
+import moment from 'moment';
 import { ActivityIndicator, View, Text, TouchableOpacity } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
 
 
 export default class HomeScreen extends React.Component {
@@ -14,12 +13,9 @@ export default class HomeScreen extends React.Component {
     }
 
     getCurrency = (coin) => {
-        // return fetch('https://api.coincap.io/v2/assets?ids=monero,bitcoin,dogecoin,litecoin')
         return fetch(`https://api.coincap.io/v2/markets?baseId=${coin}&quoteSymbol=BTC&exchangeId=kraken`)
             .then((res) => res.json())
-            .then((resJson) => {                
-                console.log({resJson})
-            
+            .then((resJson) => {                            
                 this.setState({ currency: resJson.data, isLoading: false}, () => console.log(this.state.currency, this.state.isLoading))
             })
         .catch ((error) => {
@@ -27,12 +23,20 @@ export default class HomeScreen extends React.Component {
         })
     }
 
-        // axios.get(`https://api.coincap.io/v2/assets?ids=monero,bitcoin,dogecoin,litecoin`)
-        // .then(res => {
-        //     const currencies = res.data;
-        //     this.setState({ currencies })
-        //     .catch(err => console.tron.log({err}))
-        // })
+    getPriceHistory = () => {
+        const currentTime = moment(new Date()).valueOf();
+        console.log({ currentTime });
+        const halfHourAgo = moment(new Date()).subtract(30, 'minutes').valueOf();
+        console.log({ halfHourAgo })
+        return fetch(`https://api.coincap.io/v2/candles?exchange=kraken&interval=m1&baseId=${this.state.currency[0].baseId}&quoteId=bitcoin&end=${currentTime}&start=${halfHourAgo}`)
+            .then((res) => res.json())
+            .then((resJson) => {
+                console.log({resJson})
+                const priceHistory = resJson.data;
+                this.props.navigation.navigate('PriceHistory', {priceHistory})
+            })
+            .catch((error) => console.log(error))
+    }
     
     renderCurrency = () => (
             <View>
@@ -42,15 +46,7 @@ export default class HomeScreen extends React.Component {
         )
 
     render() {
-        // if(this.state.isLoading){
-
-        //     return (
-        //     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        //         <ActivityIndicator/>
-        //       </View>
-    
-        //     )
-        // }
+   
         return (
             <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
             {this.state.loading && (
@@ -72,19 +68,14 @@ export default class HomeScreen extends React.Component {
                     </TouchableOpacity>
                     
          {this.state.currency && (
-             <FlatList
-                 data={this.state.currency}
-                 renderItem={this.renderCurrency} 
-                 extraData={this.state}
-                 />
-         )}
-         {!this.state.currency && (
-                     <View><Text>NO RESULTS</Text></View>
-         )}
+             <React.Fragment>
+            {this.renderCurrency()}
+                        <TouchableOpacity onPress={() => this.getPriceHistory()}>
+                            <Text> Price History for {this.state.currency[0].baseId}</Text>
+                        </TouchableOpacity>
+        </React.Fragment>
 
-                <TouchableOpacity onPress={() => this.props.navigation.navigate('PriceHistory')}>
-                    <Text> Price History </Text>
-                </TouchableOpacity>
+         )}
 
                 </React.Fragment>
             )}
