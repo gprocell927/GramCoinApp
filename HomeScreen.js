@@ -8,25 +8,25 @@ export default class HomeScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            currencies: null,
+            currency: null,
             isLoading: true,
         }
     }
 
-    getCurrencies(){
-        return fetch('https://api.coincap.io/v2/assets?ids=monero,bitcoin,dogecoin,litecoin')
+    getCurrency = (coin) => {
+        // return fetch('https://api.coincap.io/v2/assets?ids=monero,bitcoin,dogecoin,litecoin')
+        return fetch(`https://api.coincap.io/v2/markets?baseId=${coin}&quoteSymbol=BTC&exchangeId=kraken`)
             .then((res) => res.json())
             .then((resJson) => {                
                 console.log({resJson})
-                this.setState({
-                    currencies: resJson.data,
-                    isLoading: false
-                }, () => console.log('CURRENCY SET IN STATE', this.state.currencies));
+            
+                this.setState({ currency: resJson.data, isLoading: false}, () => console.log(this.state.currency, this.state.isLoading))
             })
         .catch ((error) => {
             console.log({error});
         })
     }
+
         // axios.get(`https://api.coincap.io/v2/assets?ids=monero,bitcoin,dogecoin,litecoin`)
         // .then(res => {
         //     const currencies = res.data;
@@ -34,10 +34,10 @@ export default class HomeScreen extends React.Component {
         //     .catch(err => console.tron.log({err}))
         // })
     
-    renderCurrency = ({item}) => (
+    renderCurrency = () => (
             <View>
-                <Text>Currency: {item.name}</Text>
-                <Text>Current Price: {item.priceUsd}</Text>
+                <Text>Currency: {this.state.currency[0].baseId}</Text>
+                <Text>Current Price(BTC): {this.state.currency[0].priceQuote}</Text>
             </View>
         )
 
@@ -61,19 +61,26 @@ export default class HomeScreen extends React.Component {
                 {!this.state.loading && (
                 <React.Fragment>
                 <Text>Home Screen</Text>
-                <TouchableOpacity onPress={() => this.getCurrencies()}>
-                            <Text>Get currencies</Text>
+                <TouchableOpacity onPress={() => this.getCurrency('litecoin')}>
+                            <Text>LiteCoin</Text>
                     </TouchableOpacity>
-                {this.state.currencies && (
-                    <FlatList
-                        data={this.state.currencies}
-                        renderItem={this.renderCurrency} 
-                        extraData={this.state}
-                        />
-                )}
-                {!this.state.currencies && (
-                            <View><Text>NO RESULTS</Text></View>
-                )}
+                <TouchableOpacity onPress={() => this.getCurrency('dogecoin')}>
+                            <Text>DogeCoin</Text>
+                    </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.getCurrency('monero')}>
+                            <Text>Monero</Text>
+                    </TouchableOpacity>
+                    
+         {this.state.currency && (
+             <FlatList
+                 data={this.state.currency}
+                 renderItem={this.renderCurrency} 
+                 extraData={this.state}
+                 />
+         )}
+         {!this.state.currency && (
+                     <View><Text>NO RESULTS</Text></View>
+         )}
 
                 <TouchableOpacity onPress={() => this.props.navigation.navigate('PriceHistory')}>
                     <Text> Price History </Text>
