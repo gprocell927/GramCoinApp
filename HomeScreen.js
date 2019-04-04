@@ -1,10 +1,17 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 
-const HomeScreen = () => (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <Text>Home Screen</Text>
-      </View>
-)
+export default class HomeScreen extends React.Component {
+    render () {
+        return (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+            <Text>Home Screen</Text>
+            <TouchableOpacity onPress={() => this.props.navigation.navigate('PriceHistory')}>
+                    <Text> Price History </Text>
+                    </TouchableOpacity>
+          </View>
 
-export default HomeScreen;
+        )
+    }
+}
+
