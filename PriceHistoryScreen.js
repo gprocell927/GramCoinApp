@@ -1,20 +1,36 @@
 import React from 'react';
 import moment from 'moment';
-import { ActivityIndicator, Text, View } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
+import { FlatList, ScrollView, Text, View } from 'react-native';
+import Styles from './styles';
 
 export default class PriceHistoryScreen extends React.Component {
-  
+    static navigationOptions = ({ navigation }) => {
+        return {
+            title: navigation.state.params.title,
+        };
+    };
+
+    renderListItemStyle = (item) => {
+        const { navigation } = this.props;
+        const { state } = navigation
+        const highestItem = state.params.highestPrice
+        const lowestItem = state.params.lowestPrice
+
+        if(item.close === highestItem.close) {
+            return [Styles.PriceListing, Styles.HighestItem];
+        } else if (item.close === lowestItem.close) {
+            return [Styles.PriceListing, Styles.LowestItem];
+        } else {
+            return Styles.PriceListing;
+        }
+    }
+
     renderPrice = ({item}) => {
-        const highestItem = this.props.navigation.state.params.highestPrice
-        const lowestItem = this.props.navigation.state.params.lowestPrice
         return (
-        <View>
-            {item.close === highestItem.close && <Text>Highest!</Text>}
-            {item.close === lowestItem.close && <Text>Lowest!</Text>}
-            <Text>{moment(item.period).format("HH:mm")}</Text>
-            <Text>Price: {item.close} BTC</Text>
-        </View>
+            <View style={this.renderListItemStyle(item)}>
+                <Text>Time: {moment(item.period).format("HH:mm")}</Text>
+                <Text>Price: {item.close} BTC</Text>
+            </View>
 
         )
 
@@ -23,21 +39,27 @@ export default class PriceHistoryScreen extends React.Component {
     
 
     render() {
+        const { navigation } = this.props;
+        const { state } = navigation
         return (
-        <View style={{flex: 1, justifyContent: 'center'}}>
-            <Text>PriceHistoryScreen</Text>
-            {/* {!this.state.loading && ( */}
+        <View>
+            <Text style={Styles.TitleText}>Price History</Text>
+            <ScrollView style={Styles.HistoryContainer}>
                 <FlatList
-                    data={this.props.navigation.state.params.priceHistory}
+                    data={state.params.priceHistory}
                     renderItem={this.renderPrice}
-                />
-
-            {/* )} */}
-                {/* {this.state.loading && (
-                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-                        <ActivityIndicator />
-                    </View>
-                )}  */}
+                /> 
+            </ScrollView>
+            <View>
+                <View style={Styles.PriceLegend}>
+                    <Text>Highest Price: </Text>
+                    <View style={Styles.HighIndicator} />
+                </View>
+                <View style={Styles.PriceLegend}>
+                    <Text>Lowest Price: </Text>
+                    <View style={Styles.LowIndicator} />
+                </View>    
+            </View>
         </View>
 
         )
