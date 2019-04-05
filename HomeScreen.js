@@ -27,16 +27,17 @@ export default class HomeScreen extends React.Component {
     getPriceHistory = () => {
         const currentTime = moment(new Date()).valueOf();
         const halfHourAgo = moment(new Date()).subtract(30, 'minutes').valueOf();
+        const { currency } = this.state;
         return fetch(`https://api.coincap.io/v2/candles?exchange=kraken&interval=m1&baseId=${this.state.currency[0].baseId}&quoteId=bitcoin&end=${currentTime}&start=${halfHourAgo}`)
             .then((res) => res.json())
             .then((resJson) => {
-                console.log({resJson})
                 const priceHistory = resJson.data;
                 const itemsSortedByPrice = sortBy(priceHistory, ['close'])
                 const highestPrice = last(itemsSortedByPrice)
                 const lowestPrice = itemsSortedByPrice[0]
+                const title = capitalize(currency[0].baseId);
 
-                this.props.navigation.navigate('PriceHistory', {priceHistory, highestPrice, lowestPrice})
+                this.props.navigation.navigate('PriceHistory', {priceHistory, highestPrice, lowestPrice, title})
             })
             .catch((error) => console.log(error))
     }
@@ -49,15 +50,15 @@ export default class HomeScreen extends React.Component {
         )
 
     render() {
-        const { currency } = this.state;
+        const { currency, loading } = this.state;
         return (
             <View style={Styles.MainContainer}>
-            {this.state.loading && (
+            {loading && (
                     <View style={Styles.MainContainer}>
                         <ActivityIndicator />
                     </View>
             )}
-                {!this.state.loading && (
+                {!loading && (
                 <React.Fragment>
                 <Text style={Styles.TitleText}>GramCoin</Text>
                 <Text>Select a currency to view it's current price.</Text>
@@ -85,7 +86,7 @@ export default class HomeScreen extends React.Component {
                     />
                 </TouchableOpacity>
                     
-         {this.state.currency && (
+         {currency && (
              <View style={Styles.CurrencyContainer}>
                 {this.renderCurrency()}
                 <TouchableOpacity style={Styles.HistoryButton} onPress={() => this.getPriceHistory()}>
@@ -94,7 +95,6 @@ export default class HomeScreen extends React.Component {
             </View>
 
          )}
-
                 </React.Fragment>
             )}
             </View>
