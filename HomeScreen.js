@@ -1,5 +1,6 @@
 import React from 'react';
 import moment from 'moment';
+import { sortBy, last } from 'lodash';
 import { ActivityIndicator, View, Text, TouchableOpacity } from 'react-native';
 
 
@@ -33,7 +34,11 @@ export default class HomeScreen extends React.Component {
             .then((resJson) => {
                 console.log({resJson})
                 const priceHistory = resJson.data;
-                this.props.navigation.navigate('PriceHistory', {priceHistory})
+                const itemsSortedByPrice = sortBy(priceHistory, ['close'])
+                const highestPrice = last(itemsSortedByPrice)
+                const lowestPrice = itemsSortedByPrice[0]
+
+                this.props.navigation.navigate('PriceHistory', {priceHistory, highestPrice, lowestPrice})
             })
             .catch((error) => console.log(error))
     }
